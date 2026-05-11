@@ -1,0 +1,234 @@
+.ai-studio {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+
+/* Left column */
+.ais-left {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  gap: 0;
+}
+
+/* Step indicator */
+.ais-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 16px;
+  gap: 24px;
+}
+.ais-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-12);
+  color: var(--text-muted);
+  cursor: default;
+  transition: color var(--ease);
+}
+.ais-step.active { color: var(--text-primary); font-weight: 500; cursor: default; }
+.ais-step.done   { color: var(--green); cursor: pointer; }
+.ais-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: all var(--ease);
+}
+.ais-step.active .ais-step-num { background: var(--purple); border-color: var(--purple); color: #fff; }
+.ais-step.done .ais-step-num   { background: var(--green);  border-color: var(--green);  color: #fff; }
+
+/* Panel */
+.ais-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ais-panel-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+/* Template grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.tmpl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--ease);
+  font-family: var(--font);
+}
+.tmpl-btn:hover { border-color: var(--purple); background: var(--bg-raised); }
+.tmpl-btn.selected { border-color: var(--purple); background: var(--purple-subtle); }
+.tmpl-icon { font-size: 18px; }
+.tmpl-name { font-size: 10px; color: var(--text-secondary); font-weight: 500; line-height: 1.3; }
+.tmpl-btn.selected .tmpl-name { color: var(--purple); }
+
+/* Fields */
+.ais-fields { display: flex; flex-direction: column; gap: 8px; }
+.ais-field-row { display: flex; flex-direction: column; gap: 3px; }
+.ais-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Mood chips */
+.mood-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.mood-chip {
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-11);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all var(--ease);
+}
+.mood-chip:hover { border-color: var(--blue); color: var(--blue); }
+.mood-chip.active { border-color: var(--blue); background: var(--blue-subtle); color: var(--blue); font-weight: 500; }
+
+/* Model selection */
+.model-list { display: flex; flex-direction: column; gap: 4px; }
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all var(--ease);
+}
+.model-row:hover { border-color: var(--border-strong); background: var(--bg-raised); }
+.model-row.selected { border-color: var(--purple); background: var(--purple-subtle); }
+.model-radio { font-size: 14px; color: var(--text-muted); flex-shrink: 0; }
+.model-row.selected .model-radio { color: var(--purple); }
+.model-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.model-name { font-size: var(--text-12); font-weight: 500; color: var(--text-primary); }
+.model-speed { flex-shrink: 0; }
+.model-stars { font-size: 10px; color: var(--amber); flex-shrink: 0; }
+
+/* Generation status */
+.gen-status-box {
+  padding: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid rgba(124,77,255,0.3);
+  border-radius: 4px;
+  margin-top: 12px;
+}
+.gsb-row { display: flex; align-items: center; gap: 8px; }
+
+/* Done state */
+.done-checkmark {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(45,199,112,0.15);
+  border: 1px solid var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--green);
+  margin: 0 auto;
+}
+
+/* Right column */
+.ais-right {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding: 16px;
+  background: var(--bg-panel);
+}
+
+.ais-preview-box {
+  aspect-ratio: 16/9;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.ais-preview-placeholder,
+.ais-preview-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Style memory */
+.style-memory-table { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.smt-row {
+  display: flex;
+  gap: 8px;
+  padding: 4px 6px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+}
+.smt-key { font-size: var(--text-10); color: var(--text-muted); width: 56px; flex-shrink: 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.smt-val { font-size: var(--text-11); color: var(--text-secondary); }
+
+/* History */
+.hist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background var(--ease);
+}
+.hist-row:hover { background: var(--bg-raised); }
+.hist-dot { color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+
+/* Shared */
+.text-purple { color: var(--purple); }
+.grow { flex: 1; }

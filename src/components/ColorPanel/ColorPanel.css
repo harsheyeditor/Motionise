@@ -1,0 +1,282 @@
+/* ══════════════════════════════════════════════
+   COLOR PANEL — Wheels, Curves, Scopes
+══════════════════════════════════════════════ */
+.color-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-strong);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.color-panel-header {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.color-panel-tabs {
+  display: flex;
+  gap: 0;
+}
+.color-tab {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--ease);
+  font-family: var(--font);
+}
+.color-tab:hover { color: var(--text-secondary); }
+.color-tab.active { color: var(--text-primary); border-bottom-color: var(--blue); }
+
+.color-panel-meta {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.color-panel-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Color Wheels row ── */
+.cw-row {
+  display: flex;
+  gap: 0;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--border);
+}
+
+.cw-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 6px 4px;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  min-width: 90px;
+}
+
+.cw-wheel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.cw-wheel {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      hsl(0,80%,50%), hsl(60,80%,50%), hsl(120,80%,50%),
+      hsl(180,80%,50%), hsl(240,80%,50%), hsl(300,80%,50%), hsl(360,80%,50%)
+    );
+  position: relative;
+  cursor: crosshair;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.5);
+  overflow: visible;
+  flex-shrink: 0;
+}
+/* White radial overlay to create "color picker" look */
+.cw-wheel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.85) 0%, transparent 65%);
+}
+/* Dark center overlay */
+.cw-wheel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--tint, transparent);
+}
+
+.cw-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #000;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
+}
+
+.cw-fader {
+  width: 68px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, #000 0%, var(--bg-raised) 50%, #fff 100%);
+  border-radius: 2px;
+  outline: none;
+  cursor: ew-resize;
+}
+.cw-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #888;
+  cursor: ew-resize;
+}
+
+.cw-readouts { width: 100%; }
+.cw-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 3px;
+}
+.cw-nums {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+.cw-num-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.cw-ch { font-size: 7px; opacity: 0.4; }
+.cw-val {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+/* ── Curves ── */
+.curves-section {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  flex: 0 0 220px;
+  min-width: 0;
+}
+.curves-wrap { display: flex; flex-direction: column; flex: 1; }
+.curves-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.curves-channels { display: flex; gap: 3px; }
+.curve-ch {
+  font-size: 10px;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all var(--ease);
+  background: none;
+  font-family: var(--font);
+}
+.curve-ch-all { color: var(--text-secondary); }
+.curve-ch-r   { color: #EF4444; }
+.curve-ch-g   { color: #22C55E; }
+.curve-ch-b   { color: #3B82F6; }
+.curve-ch:hover { background: var(--bg-hover); }
+
+.curves-canvas {
+  flex: 1;
+  padding: 4px;
+  min-height: 0;
+}
+.curves-svg { width: 100%; height: 100%; display: block; }
+
+/* ── Scopes ── */
+.scopes-layout { display: flex; flex: 1; min-width: 0; }
+.scope-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.scope-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.scope-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.scope-btns { display: flex; gap: 2px; }
+.scope-btn {
+  padding: 2px 7px;
+  font-size: 9px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all var(--ease);
+}
+.scope-btn:hover { color: var(--text-primary); }
+.scope-btn.active { background: var(--bg-active); color: var(--text-primary); border-color: var(--border-strong); }
+
+.scope-canvas {
+  flex: 1;
+  position: relative;
+  background: #05070C;
+  min-height: 0;
+}
+.scope-svg { width: 100%; height: 100%; display: block; }
+.scope-labels {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.scope-label { font-size: 8px; color: rgba(255,255,255,0.25); font-family: var(--font-mono); }
+
+/* Hue vs Sat */
+.hvs-section {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  flex: 0 0 180px;
+  min-width: 0;
+}
+.hvs-canvas { flex: 1; background: #05070C; }
+.hvs-svg { width: 100%; height: 100%; display: block; }

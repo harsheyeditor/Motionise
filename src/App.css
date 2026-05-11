@@ -1,0 +1,123 @@
+/* App-level layout — shell + resize dividers */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.app-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Resize dividers ── */
+.resize-divider {
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 120ms;
+  position: relative;
+  z-index: 50;
+}
+.resize-divider-x {
+  width: 2px;
+  height: 100%;
+  cursor: col-resize;
+  background: var(--border);
+}
+.resize-divider-y {
+  height: 2px;
+  width: 100%;
+  cursor: row-resize;
+  background: var(--border);
+}
+.resize-divider-x:hover,
+.resize-divider-x:active { background: var(--blue); box-shadow: 0 0 6px var(--blue-glow); }
+.resize-divider-y:hover,
+.resize-divider-y:active { background: var(--blue); box-shadow: 0 0 6px var(--blue-glow); }
+
+/* Wider hit area */
+.resize-divider-x::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -4px; right: -4px;
+  cursor: col-resize;
+}
+.resize-divider-y::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: -4px; bottom: -4px;
+  cursor: row-resize;
+}
+
+/* ══════════════════════════════════════
+   BOTTOM NAV — MEDIA · EDIT · COLOR etc.
+══════════════════════════════════════ */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  background: #0A0C10;
+  border-top: 1px solid var(--border-strong);
+  flex-shrink: 0;
+  padding: 0 4px;
+  gap: 2px;
+}
+
+.bottom-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 3px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all var(--ease);
+  position: relative;
+}
+.bottom-nav-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-raised);
+}
+.bottom-nav-btn.active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+.bottom-nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12px; right: 12px;
+  height: 2px;
+  background: var(--blue);
+  border-radius: 0 0 2px 2px;
+}
+
+.bottom-nav-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+.bottom-nav-label {
+  font-size: 10px;
+}

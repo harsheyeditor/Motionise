@@ -1,0 +1,92 @@
+/* ══════════════════════════════════════════════
+   TOOLBAR — Vertical icon rail
+══════════════════════════════════════════════ */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  width: var(--toolbar-w);
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  align-items: center;
+  padding: 4px 0;
+  gap: 0;
+  z-index: 10;
+  justify-content: space-between;
+}
+
+.toolbar-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.toolbar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 1px;
+  padding: 2px 4px;
+}
+
+.toolbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--ease);
+  gap: 0;
+  border: 1px solid transparent;
+  position: relative;
+}
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.toolbar-btn.active {
+  background: var(--blue-subtle);
+  color: var(--blue);
+  border-color: rgba(59,130,246,0.3);
+}
+
+.toolbar-icon {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-key {
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1;
+  letter-spacing: 0;
+  margin-top: 1px;
+}
+.toolbar-btn.active .toolbar-key { color: var(--blue); opacity: 0.8; }
+
+.toolbar-sep {
+  width: 22px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px auto;
+}
+
+.toolbar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+  padding: 2px 4px 4px;
+}

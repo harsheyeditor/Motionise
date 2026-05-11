@@ -1,0 +1,299 @@
+/* ══════════════════════════════════════════════
+   TOPBAR — Nexora-style professional NLE chrome
+══════════════════════════════════════════════ */
+.topbar {
+  display: flex;
+  align-items: center;
+  height: var(--topbar-h);
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border);
+  padding: 0 10px;
+  flex-shrink: 0;
+  z-index: 100;
+  gap: 0;
+  position: relative;
+}
+
+/* ── Left ── */
+.tb-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 220px;
+}
+
+.tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tb-logo-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  box-shadow: 0 0 10px rgba(124,58,237,0.4);
+  flex-shrink: 0;
+}
+
+.tb-brand-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
+}
+
+.tb-vdiv {
+  width: 1px;
+  height: 18px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.tb-project-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tb-name {
+  font-size: var(--text-12);
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background var(--ease);
+}
+.tb-name:hover { background: var(--bg-hover); }
+
+.tb-name-input {
+  font-size: var(--text-12);
+  font-weight: 500;
+  background: var(--bg-input);
+  border: 1px solid var(--blue);
+  border-radius: 3px;
+  color: var(--text-primary);
+  padding: 2px 6px;
+  outline: none;
+  font-family: var(--font);
+  box-shadow: 0 0 0 2px var(--blue-subtle);
+}
+
+.tb-edited-dot {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Center: Workspace tabs ── */
+.tb-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tb-workspaces {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tb-ws-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 16px;
+  height: var(--topbar-h);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  transition: all var(--ease);
+  white-space: nowrap;
+  position: relative;
+}
+.tb-ws-tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.035); }
+.tb-ws-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--blue);
+  background: rgba(59,130,246,0.07);
+}
+.tb-ws-tab.ai-tab:hover { color: var(--purple-bright); }
+.tb-ws-tab.ai-tab.active {
+  border-bottom-color: var(--purple);
+  background: var(--purple-subtle);
+  color: var(--purple-bright);
+}
+
+.tb-ai-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--purple);
+  box-shadow: 0 0 6px var(--purple);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Right: Actions ── */
+.tb-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 320px;
+  justify-content: flex-end;
+}
+
+/* Timecode block */
+.tb-tc-block {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.tb-tc-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+.tb-tc-val {
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 0.05em;
+}
+
+/* Icon buttons row */
+.tb-action-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.tb-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: all var(--ease);
+  cursor: pointer;
+  border: none;
+}
+.tb-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Generation pill */
+.tb-gen-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.tb-gen-track {
+  width: 52px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+.tb-gen-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--purple-bright));
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+
+/* Quick Export */
+.tb-quick-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  height: 28px;
+  border-radius: 5px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ease);
+  white-space: nowrap;
+}
+.tb-quick-export-btn:hover { background: var(--bg-hover); border-color: rgba(255,255,255,0.2); }
+
+/* Export primary */
+.tb-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 16px;
+  height: 28px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--ease);
+  white-space: nowrap;
+  border: none;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.35);
+}
+.tb-export-btn:hover {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  box-shadow: 0 4px 16px rgba(139,92,246,0.5);
+  transform: translateY(-1px);
+}
+
+/* Avatar */
+.tb-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--bg-topbar);
+  transition: box-shadow var(--ease);
+}
+.tb-avatar:hover { box-shadow: 0 0 0 2px var(--blue); }
