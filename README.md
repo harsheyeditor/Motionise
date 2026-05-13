@@ -1,16 +1,113 @@
-# React + Vite
+# Motionise
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **AI-powered non-linear video editor** — a professional-grade NLE prototype built with React + Vite.
 
-Currently, two official plugins are available:
+Motionise combines a DaVinci Resolve-inspired editing interface with an AI generation pipeline, letting you compose multi-track timelines, apply effects, and generate motion-design clips from a text prompt — all in the browser.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ What It Is
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Motionise is a **client-side NLE prototype** that demonstrates a production-quality editing workflow:
 
-## Expanding the ESLint configuration
+| Layer | What you get |
+|---|---|
+| **Media** | Asset library with search, grid/list views, drag-to-timeline |
+| **Timeline** | Multi-track editor with drag, trim, split (blade), snap, markers, undo/redo |
+| **Preview** | Program monitor with transport controls, safe-zones, JKL shuttle |
+| **Inspector** | Transform, composite, speed, stabilisation, and AI controls per clip |
+| **Color** | Color wheels, waveform scopes, curves (bottom panel, toggle via COLOR tab) |
+| **AI Studio** | Template-based brief → master prompt → simulated generation pipeline |
+| **Export** | Format, resolution, fps, quality settings modal |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Getting Started
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start the dev server
+npm run dev
+```
+
+Then open **http://localhost:5173** in your browser.
+
+> No API keys required. AI generation is simulated client-side.
+
+---
+
+## 🗂 Project Structure
+
+```
+src/
+├── App.jsx                        # Root shell, panel layout, resize dividers
+├── context/
+│   └── AppContext.jsx             # Global state (clips, tracks, playback, undo…)
+└── components/
+    ├── Topbar/          # Brand, project name, workspace tabs, export
+    ├── Toolbar/         # Vertical tool rail (Select, Trim, Blade, Text…)
+    ├── LeftPanel/       # Media browser, Effects, Transitions, Titles
+    ├── Studio/          # Program monitor, transport bar, AI command bar
+    ├── Timeline/        # Multi-track timeline, clip editing, mixer
+    ├── RightPanel/      # Inspector, Applied Effects, Essential Graphics
+    ├── ColorPanel/      # Color wheels + waveform scopes
+    ├── AIStudio/        # Full-screen AI brief → generate workflow
+    ├── ExportModal/     # Export settings dialog
+    └── KeyboardShortcutsModal/
+```
+
+---
+
+## ⌨️ Key Shortcuts
+
+| Key | Action |
+|---|---|
+| `Space` | Play / Pause |
+| `J` | Shuttle reverse (press again to speed up) |
+| `K` | Stop shuttle |
+| `L` | Shuttle forward (press again to speed up) |
+| `V` | Selection tool |
+| `B` | Blade tool — press again on selected clip to split |
+| `T` | Trim tool |
+| `M` | Add marker at playhead |
+| `Del` / `Backspace` | Delete selected clip |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
+| `?` | Keyboard shortcuts reference |
+
+---
+
+## 🔧 Tech Stack
+
+| | |
+|---|---|
+| Framework | React 18 + Vite |
+| Styling | Vanilla CSS with CSS custom properties |
+| State | React Context + useReducer-style callbacks |
+| Build | Vite (ESBuild) |
+| Lint | ESLint + react-hooks plugin |
+
+---
+
+## 🎬 User Workflow
+
+```
+1. MEDIA     → Import / browse assets in the left panel
+2. TIMELINE  → Drag assets onto tracks; drag to move, handles to trim
+3. PREVIEW   → Use transport controls or JKL to scrub and review
+4. INSPECTOR → Fine-tune transform, opacity, speed per clip (right panel)
+5. COLOR     → Switch to COLOR tab (bottom nav) for grading tools
+6. AI STUDIO → Click "AI STUDIO" in the top nav to generate clips from prompts
+7. EXPORT    → Hit Export (top-right) to configure and render
+```
+
+---
+
+## 📝 Notes
+
+- All video playback and AI generation is **simulated** — no real encode or API call occurs.
+- Drag-and-drop from the media browser to the timeline is fully functional.
+- Undo/redo operates on a 20-step ring buffer covering clip state.
+- The color panel, fairlight, and deliver workspaces are UI stubs ready for implementation.

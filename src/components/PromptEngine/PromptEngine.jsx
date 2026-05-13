@@ -1,17 +1,17 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import './PromptEngine.css'
 import { useApp } from '../../context/AppContext'
 
 const STAGES = [
   { id: 'brief',    icon: '✎', label: 'Brief',    desc: 'Define your story' },
-  { id: 'generate', icon: '✦', label: 'Generate', desc: 'AI creates clips' },
+  { id: 'generate', icon: '★', label: 'Generate', desc: 'AI creates clips' },
   { id: 'assemble', icon: '⊞', label: 'Assemble', desc: 'Edit & export' },
 ]
 
 const TEMPLATES = [
   { id: 't1', name: 'Product Launch',  icon: '🚀', desc: 'Hero video for a product launch', fields: ['Product name','Key benefit','Target audience','Tone'] },
   { id: 't2', name: 'Data Story',      icon: '📊', desc: 'Turn data into motion graphics',   fields: ['Data source','Key metric','Time period','Chart style'] },
-  { id: 't3', name: 'Brand Identity',  icon: '✦', desc: 'Cohesive brand reel',              fields: ['Brand name','Brand colors','Brand voice','Industry'] },
+  { id: 't3', name: 'Brand Identity',  icon: '★', desc: 'Cohesive brand reel',              fields: ['Brand name','Brand colors','Brand voice','Industry'] },
   { id: 't4', name: 'Social Reel',     icon: '📱', desc: 'Viral-ready short-form content',  fields: ['Hook','Platform','CTA','Vibe'] },
   { id: 't5', name: 'Event Highlights',icon: '🎬', desc: 'Event recap / highlight reel',    fields: ['Event name','Key moments','Music mood','Output length'] },
   { id: 't6', name: 'Tutorial',        icon: '🎓', desc: 'Step-by-step explainer video',    fields: ['Topic','Audience level','Key steps','Style'] },
@@ -183,7 +183,7 @@ export default function PromptEngine() {
 
               {/* AI suggestions */}
               <div>
-                <div className="pe-section-title">✦ AI Suggestions</div>
+                <div className="pe-section-title">★ AI Suggestions</div>
                 <div className="suggestions-list">
                   {suggestions.map((s, i) => (
                     <div key={i} className="suggestion-item" onClick={() => setMasterPrompt(p => p + '. ' + s)}>
@@ -236,7 +236,7 @@ export default function PromptEngine() {
                 </div>
               ) : (
                 <button className="btn btn-primary generate-big-btn" onClick={handleGenerate}>
-                  ✦ Generate Video
+                  ★ Generate Video
                 </button>
               )}
             </div>

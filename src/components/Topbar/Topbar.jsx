@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Topbar.css'
 import { useApp } from '../../context/AppContext'
+import ProjectsModal from '../ProjectsModal/ProjectsModal'
 
 const WORKSPACES = [
   { id: 'editing',    label: 'EDIT'      },
@@ -17,54 +18,89 @@ export default function Topbar() {
     workspace, setWorkspace,
     activeTool, setActiveTool,
     projectName, setProjectName,
-    saveStatus,
+    saveStatus, setSaveStatus,
     isPlaying, setIsPlaying,
     playhead, setPlayhead,
     generating, genProgress,
     simulateGenerate,
     totalDuration,
+    undo, redo, shuttleJ, shuttleK, shuttleL,
+    splitClipAtPlayhead, selectedClipId,
+    setShowExportModal, setShowShortcutsModal,
+    addMarker, deleteClip,
+    projectId, loadProjectData
   } = useApp()
 
   const [editingName, setEditingName] = useState(false)
+  const [showProjects, setShowProjects] = useState(false)
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+      const isCmd = isMac ? e.metaKey : e.ctrlKey
+
+      if (isCmd && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return }
+      if (isCmd && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return }
+
       if (e.key === ' ')   { e.preventDefault(); setIsPlaying(p => !p) }
       if (e.key === 'v' || e.key === 'V') setActiveTool('select')
-      if (e.key === 'b' || e.key === 'B') setActiveTool('blade')
       if (e.key === 't' || e.key === 'T') setActiveTool('trim')
+      
+      if (e.key === 'b' || e.key === 'B') {
+        if (activeTool === 'blade' && selectedClipId) splitClipAtPlayhead(selectedClipId)
+        setActiveTool('blade')
+      }
+
+      if (e.key === 'j' || e.key === 'J') { e.preventDefault(); shuttleJ() }
+      if (e.key === 'k' || e.key === 'K') { e.preventDefault(); shuttleK() }
+      if (e.key === 'l' || e.key === 'L') { e.preventDefault(); shuttleL() }
+
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); addMarker() }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedClipId) { e.preventDefault(); deleteClip(selectedClipId) }
+      
+      if (e.key === '?') { e.preventDefault(); setShowShortcutsModal(s => !s) }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [setActiveTool, setIsPlaying])
+  }, [setActiveTool, setIsPlaying, undo, redo, shuttleJ, shuttleK, shuttleL, splitClipAtPlayhead, selectedClipId, activeTool, setShowShortcutsModal, addMarker, deleteClip])
 
   return (
-    <header className="topbar">
+    <>
+      <header className="topbar">
 
-      {/* ── Left: Brand + Project Name ── */}
-      <div className="tb-left">
-        <div className="tb-brand">
-          <div className="tb-logo-mark">M</div>
-          <span className="tb-brand-name">MOTIONISE</span>
+        {/* ── Left: Brand + Project Name ── */}
+        <div className="tb-left">
+          <div className="tb-brand">
+            <div className="tb-logo-mark">M</div>
+            <span className="tb-brand-name">MOTIONISE</span>
+          </div>
+          <div className="tb-vdiv" />
+          <button className="btn-ghost" style={{ marginRight: 8 }} onClick={() => setShowProjects(true)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </button>
+          <div className="tb-project-wrap">
+            {editingName ? (
+              <input
+                className="tb-name-input"
+                value={projectName}
+                autoFocus
+                onChange={e => { setProjectName(e.target.value); }}
+                onBlur={() => { setEditingName(false); }}
+                onKeyDown={e => e.key === 'Enter' && setEditingName(false)}
+              />
+            ) : (
+              <span className="tb-name" onClick={() => setEditingName(true)}>{projectName}</span>
+            )}
+            <span className={`tb-save-status tb-save-${saveStatus}`}>
+              {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved'}
+            </span>
+          </div>
         </div>
-        <div className="tb-vdiv" />
-        <div className="tb-project-wrap">
-          {editingName ? (
-            <input
-              className="tb-name-input"
-              value={projectName}
-              autoFocus
-              onChange={e => setProjectName(e.target.value)}
-              onBlur={() => setEditingName(false)}
-              onKeyDown={e => e.key === 'Enter' && setEditingName(false)}
-            />
-          ) : (
-            <span className="tb-name" onClick={() => setEditingName(true)}>{projectName}</span>
-          )}
-          <span className="tb-edited-dot">· Edited</span>
-        </div>
-      </div>
 
       {/* ── Center: Workspace Tabs ── */}
       <div className="tb-center">
@@ -128,7 +164,7 @@ export default function Topbar() {
           </div>
         )}
 
-        <button className="tb-quick-export-btn" onClick={() => {}}>
+        <button className="tb-quick-export-btn" onClick={() => setShowExportModal(true)}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -136,7 +172,7 @@ export default function Topbar() {
           Quick Export
         </button>
 
-        <button className="tb-export-btn" onClick={() => simulateGenerate('quick generate')}>
+        <button className="tb-export-btn" onClick={() => setShowExportModal(true)}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
             <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './LeftPanel.css'
 import { useApp } from '../../context/AppContext'
+import { uploadAsset } from '../../api/assets'
 
 /* ── Gradient thumbnails for demo asset previews ── */
 const THUMB_GRADIENTS = [
@@ -43,19 +44,38 @@ const EFFECT_CARDS = [
   { name: 'Sharpen',          style: { background: 'linear-gradient(135deg,#64748b,#94a3b8)' }},
   { name: 'Tint',             style: { background: 'linear-gradient(135deg,#d97706 0%,#fbbf24 100%)' }},
   { name: 'Vignette',         style: { background: 'radial-gradient(ellipse at center, #334155 30%, #000 100%)' }},
-  { name: '✦ AI Restyle',     style: { background: 'linear-gradient(135deg,#6d28d9,#a78bfa,#4c1d95)', border: '1px solid rgba(167,139,250,0.5)' }, ai: true },
-  { name: '✦ AI Remove BG',   style: { background: 'linear-gradient(135deg,#7c3aed,#c4b5fd)' }, ai: true },
+  { name: '★ AI Restyle',     style: { background: 'linear-gradient(135deg,#6d28d9,#a78bfa,#4c1d95)', border: '1px solid rgba(167,139,250,0.5)' }, ai: true },
+  { name: '★ AI Remove BG',   style: { background: 'linear-gradient(135deg,#7c3aed,#c4b5fd)' }, ai: true },
 ]
 
 export default function LeftPanel() {
-  const { assets } = useApp()
+  const { assets, setAssets } = useApp()
   const [tab, setTab]           = useState('project')
   const [search, setSearch]     = useState('')
   const [viewMode, setViewMode] = useState('list')
   const [openFolders, setOpenFolders] = useState({ seq: true, footage: true, audio: true, graphics: true, ai: true })
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const filtered = assets.filter(a => a.name.toLowerCase().includes(search.toLowerCase()))
   const toggle   = (k) => setOpenFolders(f => ({ ...f, [k]: !f[k] }))
+
+  async function handleUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = '' // reset for next upload
+
+    setUploading(true)
+    try {
+      const asset = await uploadAsset(file, p => setUploadProgress(p))
+      setAssets(prev => [asset, ...prev])
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setUploading(false)
+      setUploadProgress(0)
+    }
+  }
 
   return (
     <aside className="left-panel">
@@ -102,12 +122,17 @@ export default function LeftPanel() {
             </svg>
           </button>
         </div>
-        <button className="lp-import-btn" title="Import">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-        </button>
+        <label className="lp-import-btn" title="Import" style={{ cursor: uploading ? 'wait' : 'pointer' }}>
+          <input type="file" style={{ display: 'none' }} onChange={handleUpload} disabled={uploading} />
+          {uploading ? (
+            <span style={{ fontSize: 9 }}>{uploadProgress}%</span>
+          ) : (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          )}
+        </label>
       </div>
 
       {/* ── Content ── */}
@@ -164,11 +189,11 @@ export default function LeftPanel() {
             <FolderRow label="05_SFX" icon="📁" open={false} onToggle={() => {}} count={3} />
 
             {/* AI Generated */}
-            <FolderRow label="AI Generated" icon="✦" open={openFolders.ai} onToggle={() => toggle('ai')} count={2} ai />
+            <FolderRow label="AI Generated" icon="★" open={openFolders.ai} onToggle={() => toggle('ai')} count={2} ai />
             {openFolders.ai && (
               <>
-                <AssetRow asset={{ id: 'ai1', name: 'AI: Neon Title',     dur: '0:03', size: 'AI', type: 'video' }} icon="✦" color="#A78BFA" grad="linear-gradient(135deg,#4c1d95,#7c3aed)" />
-                <AssetRow asset={{ id: 'ai2', name: 'AI: Particle Burst', dur: '0:02', size: 'AI', type: 'video' }} icon="✦" color="#A78BFA" grad="linear-gradient(135deg,#6d28d9,#a78bfa)" />
+                <AssetRow asset={{ id: 'ai1', name: 'AI: Neon Title',     dur: '0:03', size: 'AI', type: 'video' }} icon="★" color="#A78BFA" grad="linear-gradient(135deg,#4c1d95,#7c3aed)" />
+                <AssetRow asset={{ id: 'ai2', name: 'AI: Particle Burst', dur: '0:02', size: 'AI', type: 'video' }} icon="★" color="#A78BFA" grad="linear-gradient(135deg,#6d28d9,#a78bfa)" />
               </>
             )}
           </div>
@@ -187,8 +212,8 @@ export default function LeftPanel() {
               { name: 'Lower Third',  color: '#60a5fa', bg: '#0f172a' },
               { name: 'End Card',     color: '#f0f0f0', bg: '#0a0a0a' },
               { name: 'Credit Roll',  color: '#e2e8f0', bg: '#020617' },
-              { name: '✦ AI Title',   color: '#a78bfa', bg: 'linear-gradient(135deg,#1e1b4b,#2e1065)', ai: true },
-              { name: '✦ Kinetic',    color: '#c4b5fd', bg: 'linear-gradient(135deg,#1e1b4b,#4c1d95)', ai: true },
+              { name: '★ AI Title',   color: '#a78bfa', bg: 'linear-gradient(135deg,#1e1b4b,#2e1065)', ai: true },
+              { name: '★ Kinetic',    color: '#c4b5fd', bg: 'linear-gradient(135deg,#1e1b4b,#4c1d95)', ai: true },
             ].map(t => (
               <div key={t.name} className={`lp-title-card ${t.ai ? 'ai' : ''}`} draggable>
                 <div className="lp-title-preview" style={{ background: t.bg }}>
@@ -229,8 +254,17 @@ function FolderRow({ label, icon, open, onToggle, count, ai = false }) {
 
 /* ── Asset list row with gradient thumb ── */
 function AssetRow({ asset, icon, color, grad }) {
+  const onDragStart = (e) => {
+    e.dataTransfer.effectAllowed = 'copy'
+    e.dataTransfer.setData('application/motionise-asset', JSON.stringify({
+      assetId: asset.id,
+      name: asset.name,
+      type: asset.type,
+      durSec: asset.durSec ?? 5,
+    }))
+  }
   return (
-    <div className="lp-asset lp-indent" draggable>
+    <div className="lp-asset lp-indent" draggable onDragStart={onDragStart}>
       <div className="asset-thumb" style={{ background: grad }} />
       <span className="asset-icon" style={color ? { color } : {}}>{icon}</span>
       <span className="asset-name truncate">{asset.name}</span>
@@ -242,8 +276,17 @@ function AssetRow({ asset, icon, color, grad }) {
 
 /* ── 4-col grid asset card ── */
 function AssetCard({ asset, grad }) {
+  const onDragStart = (e) => {
+    e.dataTransfer.effectAllowed = 'copy'
+    e.dataTransfer.setData('application/motionise-asset', JSON.stringify({
+      assetId: asset.id,
+      name: asset.name,
+      type: asset.type,
+      durSec: asset.durSec ?? 5,
+    }))
+  }
   return (
-    <div className="lp-card4" draggable>
+    <div className="lp-card4" draggable onDragStart={onDragStart}>
       <div className="lp-card4-thumb" style={{ background: grad }}>
         <div className="lp-card4-type">
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

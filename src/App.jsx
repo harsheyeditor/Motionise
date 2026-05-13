@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import './App.css'
 import Topbar     from './components/Topbar/Topbar'
 import Toolbar    from './components/Toolbar/Toolbar'
@@ -8,6 +8,8 @@ import RightPanel from './components/RightPanel/RightPanel'
 import Timeline   from './components/Timeline/Timeline'
 import ColorPanel from './components/ColorPanel/ColorPanel'
 import AIStudio   from './components/AIStudio/AIStudio'
+import ExportModal from './components/ExportModal/ExportModal'
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal/KeyboardShortcutsModal'
 import { AppProvider, useApp } from './context/AppContext'
 
 /* ── Drag-to-resize divider ── */
@@ -48,7 +50,7 @@ function BottomNav({ activeTab, onTabChange }) {
 }
 
 function Shell() {
-  const { workspace } = useApp()
+  const { workspace, showExportModal, showShortcutsModal } = useApp()
 
   /* Panel widths & heights */
   const [leftW,  setLeftW]  = useState(240)
@@ -70,10 +72,10 @@ function Shell() {
                    : colorH
 
     const onMove = (me) => {
-      if (which === 'left')  setLeftW(v  => Math.max(180, Math.min(420, startVal + (me.clientX - startX))))
-      if (which === 'right') setRightW(v => Math.max(200, Math.min(440, startVal - (me.clientX - startX))))
-      if (which === 'tl')    setTlH(v   => Math.max(140, Math.min(520, startVal - (me.clientY - startY))))
-      if (which === 'color') setColorH(v => Math.max(140, Math.min(340, startVal - (me.clientY - startY))))
+      if (which === 'left')  setLeftW(Math.max(180, Math.min(420, startVal + (me.clientX - startX))))
+      if (which === 'right') setRightW(Math.max(200, Math.min(440, startVal - (me.clientX - startX))))
+      if (which === 'tl')    setTlH(Math.max(140, Math.min(520, startVal - (me.clientY - startY))))
+      if (which === 'color') setColorH(Math.max(140, Math.min(340, startVal - (me.clientY - startY))))
     }
     const onUp = () => {
       window.removeEventListener('mousemove', onMove)
@@ -125,6 +127,10 @@ function Shell() {
             </div>
           </>
         )}
+
+        {/* Modals */}
+        {showExportModal && <ExportModal />}
+        {showShortcutsModal && <KeyboardShortcutsModal />}
       </div>
     </div>
   )

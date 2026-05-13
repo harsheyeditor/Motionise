@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import './Studio.css'
 import { useApp } from '../../context/AppContext'
 
@@ -303,7 +303,7 @@ function AICommandBar({ simulateGenerate, generating, genProgress }) {
   return (
     <div className={`ai-cmd-bar ${expanded ? 'expanded' : ''}`}>
       <div className="ai-cmd-main">
-        <div className="ai-cmd-sparkle">✦</div>
+        <div className="ai-cmd-sparkle">★</div>
         <input
           className="ai-cmd-input"
           placeholder='Describe a motion, effect, or scene… e.g. "cinematic intro with particle burst and title"'

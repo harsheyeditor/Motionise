@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+﻿import { useState, useCallback } from 'react'
 import './RightPanel.css'
 import { useApp } from '../../context/AppContext'
 
@@ -161,7 +161,7 @@ function InspectorTab() {
           placeholder="Describe changes to regenerate…"
         />
         <div className="insp-ai-actions">
-          <button className="btn-ai" style={{ flex: 1, fontSize: 11, height: 26 }}>✦ Regenerate</button>
+          <button className="btn-ai" style={{ flex: 1, fontSize: 11, height: 26 }}>★ Regenerate</button>
           <button className="btn-secondary" style={{ fontSize: 11, height: 26 }}>Variations</button>
         </div>
         <PropRow label="AI Strength" val="75" unit="%" hasSlider sliderMax={100} min={0} max={100} />
@@ -182,7 +182,7 @@ function EffectsAppliedTab() {
         <button className="btn-ghost" style={{ fontSize: 10 }}>+ Add Effect</button>
       </div>
       <EffectRow name="Lumetri Color" expanded />
-      {clip?.aiGenerated && <EffectRow name="✦ AI Style Transfer" ai />}
+      {clip?.aiGenerated && <EffectRow name="★ AI Style Transfer" ai />}
       <EffectRow name="Gaussian Blur" />
 
       <div className="effects-presets">

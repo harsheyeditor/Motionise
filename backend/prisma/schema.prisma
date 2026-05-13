@@ -1,0 +1,52 @@
+// This is your Prisma schema file
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Projects ──────────────────────────────────────────────
+model Project {
+  id        String   @id @default(cuid())
+  name      String   @default("Untitled Project")
+  tracks    Json     @default("[]")
+  clips     Json     @default("[]")
+  markers   Json     @default("[]")
+  zoom      Float    @default(60)
+  totalDur  Float    @default(18)
+  thumbnail String?  // future: base64 or URL
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Assets (uploaded media files) ─────────────────────────
+model Asset {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // 'video' | 'audio' | 'image'
+  filename  String   // stored filename on disk
+  url       String   // public URL: /uploads/assets/<filename>
+  sizeMb    Float
+  durSec    Float    @default(0)
+  mimeType  String
+  createdAt DateTime @default(now())
+}
+
+// ── Jobs (export / AI generation) ─────────────────────────
+model Job {
+  id        String   @id @default(cuid())
+  type      String   // 'export' | 'generate'
+  status    String   @default("pending")  // pending | running | done | failed
+  progress  Int      @default(0)          // 0-100
+  payload   Json                          // input settings
+  result    Json?                         // { url, assetId, ... }
+  error     String?
+  projectId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

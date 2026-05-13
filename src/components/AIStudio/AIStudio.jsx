@@ -1,11 +1,11 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import './AIStudio.css'
 import { useApp } from '../../context/AppContext'
 
 const TEMPLATES = [
   { id: 'product',  icon: '📦', label: 'Product Launch',  fields: ['Product name','Key benefit','Tone','Duration'] },
   { id: 'data',     icon: '📊', label: 'Data Story',      fields: ['Data source','Key metric','Chart style','Duration'] },
-  { id: 'brand',    icon: '✦',  label: 'Brand Reel',      fields: ['Brand name','Industry','Colors','Duration'] },
+  { id: 'brand',    icon: '★',  label: 'Brand Reel',      fields: ['Brand name','Industry','Colors','Duration'] },
   { id: 'social',   icon: '📱', label: 'Social Reel',     fields: ['Hook','Platform','CTA','Duration'] },
   { id: 'event',    icon: '🎬', label: 'Event Highlight', fields: ['Event name','Key moments','Music mood','Duration'] },
   { id: 'tutorial', icon: '🎓', label: 'Tutorial',        fields: ['Topic','Skill level','Key steps','Duration'] },
@@ -151,7 +151,7 @@ export default function AIStudio() {
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button className="btn-secondary" onClick={() => setStage(0)} style={{ fontSize: 11 }}>← Back</button>
                 <button className="btn-ai grow" style={{ fontSize: 13, height: 32 }} onClick={handleGenerate}>
-                  ✦ Generate Video
+                  ★ Generate Video
                 </button>
               </div>
             )}
@@ -184,7 +184,7 @@ export default function AIStudio() {
               </div>
             ) : (
               <div className="ais-preview-placeholder">
-                <div style={{ fontSize: 28, color: 'var(--text-muted)' }}>✦</div>
+                <div style={{ fontSize: 28, color: 'var(--text-muted)' }}>★</div>
                 <div className="text-11 text-muted" style={{ marginTop: 6 }}>Preview will appear here</div>
               </div>
             )}

@@ -36,6 +36,8 @@ export default function Timeline({ height = 224 }) {
     markers,
     totalDuration,
     activeTool,
+    pushHistory, splitClipAtPlayhead, dropAssetToTrack, setClipColor,
+    deleteClip, addMarker,
   } = useApp()
 
   const rulerRef = useRef(null)
@@ -98,12 +100,13 @@ export default function Timeline({ height = 224 }) {
       }))
     }
     const onUp = () => {
+      setClips(cs => { pushHistory(cs); return cs })
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
-  }, [clips, pxPerSec, setClips])
+  }, [clips, pxPerSec, setClips, pushHistory])
 
   /* ── Clip drag ── */
   const onClipDrag = useCallback((e, clipId) => {
@@ -118,13 +121,14 @@ export default function Timeline({ height = 224 }) {
       const dx = (me.clientX - startX) / pxPerSec
       let newStart = Math.max(0, origStart + dx)
 
-      // Snap to other clips
+      // Snap to other clips, playhead, and markers
       if (snapEnabled) {
         const snapTargets = clips
           .filter(c => c.id !== clipId)
           .flatMap(c => [c.start, c.start + c.dur])
+          .concat([playhead, ...markers.map(m => m.time)])
         for (const t of snapTargets) {
-          if (Math.abs(newStart - t) < 0.2) {
+          if (Math.abs(newStart - t) < 0.15) {
             newStart = t
             setSnapLine(t * pxPerSec)
             break
@@ -137,12 +141,13 @@ export default function Timeline({ height = 224 }) {
     }
     const onUp = () => {
       setSnapLine(null)
+      setClips(cs => { pushHistory(cs); return cs })
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
-  }, [clips, pxPerSec, snapEnabled, activeTool, setClips])
+  }, [clips, pxPerSec, snapEnabled, activeTool, setClips, playhead, markers, pushHistory])
 
   /* ── Track context menu ── */
   const onTrackCtx = (e, trackId) => {
@@ -215,7 +220,7 @@ export default function Timeline({ height = 224 }) {
             <path d="M12 22V2M7 7H2M7 17H2M22 7h-5M22 17h-5"/>
           </svg>
         </button>
-        <button className="btn-icon" title="Add Marker">
+        <button className="btn-icon" title="Add Marker" onClick={() => addMarker()}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
@@ -223,7 +228,12 @@ export default function Timeline({ height = 224 }) {
         <div className="tl-tb-div" />
         <button className="btn-ghost" style={{ fontSize: 10 }}>Lift</button>
         <button className="btn-ghost" style={{ fontSize: 10 }}>Ripple</button>
-        <button className="btn-ghost" style={{ fontSize: 10, color: 'var(--red)' }}>
+        <button
+          className="btn-ghost"
+          style={{ fontSize: 10, color: 'var(--red)' }}
+          title="Delete selected clip (Del)"
+          onClick={() => selectedClipId && deleteClip(selectedClipId)}
+        >
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
           </svg>
@@ -244,7 +254,6 @@ export default function Timeline({ height = 224 }) {
               const t = tracks.find(tr => tr.id === tid)
               if (!t) return null
               const isAudio = t.type === 'audio'
-              const isVideo = t.type === 'video'
 
               return (
                 <div
@@ -362,6 +371,20 @@ export default function Timeline({ height = 224 }) {
                     className={`tl-track tl-track-${t.type} ${t.muted ? 'muted' : ''} ${t.locked ? 'locked' : ''}`}
                     style={{ height: trackH }}
                     onContextMenu={e => onTrackCtx(e, tid)}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => {
+                      e.preventDefault()
+                      if (t.locked) return
+                      const data = e.dataTransfer.getData('application/motionise-asset')
+                      if (!data) return
+                      try {
+                        const asset = JSON.parse(data)
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        const x = e.clientX - rect.left + (scrollRef.current?.scrollLeft || 0)
+                        const dropStart = Math.max(0, x / pxPerSec)
+                        dropAssetToTrack(asset.assetId, tid, dropStart)
+                      } catch (err) { console.error('Drop error', err) }
+                    }}
                   >
                     {/* Alternating row tint */}
                     <div className="tl-track-bg" />
@@ -374,12 +397,22 @@ export default function Timeline({ height = 224 }) {
                         pxPerSec={pxPerSec}
                         trackH={trackH}
                         selected={selectedClipId === clip.id}
-                        onSelect={() => !t.locked && selectClip(clip.id)}
+                        onSelect={() => {
+                          if (t.locked) return
+                          if (activeTool === 'blade') {
+                            splitClipAtPlayhead(clip.id)
+                          } else {
+                            selectClip(clip.id)
+                          }
+                        }}
                         onTrimStart={onTrimStart}
                         onDrag={onClipDrag}
                         locked={t.locked}
                         tool={activeTool}
                         keyframes={DEMO_KFS[clip.id] || []}
+                        splitClipAtPlayhead={splitClipAtPlayhead}
+                        setClipColor={setClipColor}
+                        deleteClip={deleteClip}
                       />
                     ))}
 
@@ -438,9 +471,8 @@ export default function Timeline({ height = 224 }) {
 }
 
 /* ════ Clip Block ════ */
-function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart, onDrag, locked, tool, keyframes }) {
+function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart, onDrag, locked, tool, keyframes, splitClipAtPlayhead, setClipColor, deleteClip }) {
   const [ctxMenu, setCtxMenu] = useState(null)
-  const [hovered, setHovered] = useState(false)
   const w = Math.max(clip.dur * pxPerSec - 2, 6)
 
   const onCtx = (e) => {
@@ -457,7 +489,7 @@ function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart
   }
 
   const isAudio = track.type === 'audio'
-  const trackColor = TRACK_TYPE_COLOR[track.type]
+  const trackColor = clip.color || TRACK_TYPE_COLOR[track.type]
 
   return (
     <>
@@ -472,15 +504,13 @@ function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart
         onMouseDown={e => !locked && tool === 'select' && onDrag(e, clip.id)}
         onClick={onSelect}
         onContextMenu={onCtx}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
         {/* Left color strip */}
         <div className="tl-clip-strip" style={{ background: trackColor }} />
 
         {/* Top label bar */}
         <div className="tl-clip-label-bar">
-          {clip.aiGenerated && <span className="tl-ai-badge">✦</span>}
+          {clip.aiGenerated && <span className="tl-ai-badge">★</span>}
           <span className="tl-clip-name truncate">{clip.name}</span>
           {w > 100 && <span className="tl-clip-dur mono">{clip.dur.toFixed(1)}s</span>}
         </div>
@@ -526,9 +556,18 @@ function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart
           onClick={() => setCtxMenu(null)}
           onMouseLeave={() => setCtxMenu(null)}
         >
-          <div className="ctx-item">Split at Playhead <span className="ctx-shortcut">B</span></div>
+          <div className="ctx-item" onClick={(e) => { e.stopPropagation(); splitClipAtPlayhead(clip.id); setCtxMenu(null); }}>Split at Playhead <span className="ctx-shortcut">B</span></div>
           <div className="ctx-item">Duplicate</div>
           <div className="ctx-item">Copy <span className="ctx-shortcut">Ctrl+C</span></div>
+          <div className="ctx-sep" />
+          <div className="ctx-item-submenu" style={{ padding: '4px 12px' }}>
+            <div style={{ fontSize: 11, marginBottom: 6, color: 'var(--text-muted)' }}>Label Color</div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', width: 120 }}>
+              {['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899', '#94A3B8'].map(c => (
+                <div key={c} onClick={(e) => { e.stopPropagation(); setClipColor(clip.id, c); setCtxMenu(null); }} style={{ width: 16, height: 16, borderRadius: '50%', background: c, cursor: 'pointer', border: clip.color === c ? '2px solid white' : 'none' }} />
+              ))}
+            </div>
+          </div>
           <div className="ctx-sep" />
           <div className="ctx-item">Speed / Duration…</div>
           <div className="ctx-item">Add Hold Frame</div>
@@ -536,12 +575,12 @@ function TLClip({ clip, track, pxPerSec, trackH, selected, onSelect, onTrimStart
           {clip.aiGenerated && (
             <>
               <div className="ctx-sep" />
-              <div className="ctx-item" style={{ color: 'var(--purple)' }}>✦ Regenerate Clip</div>
-              <div className="ctx-item" style={{ color: 'var(--purple)' }}>✦ Edit AI Prompt</div>
+              <div className="ctx-item" style={{ color: 'var(--purple)' }}>★ Regenerate Clip</div>
+              <div className="ctx-item" style={{ color: 'var(--purple)' }}>★ Edit AI Prompt</div>
             </>
           )}
           <div className="ctx-sep" />
-          <div className="ctx-item danger">Delete <span className="ctx-shortcut">Del</span></div>
+          <div className="ctx-item danger" onClick={(e) => { e.stopPropagation(); deleteClip(clip.id); setCtxMenu(null); }}>Delete <span className="ctx-shortcut">Del</span></div>
         </div>
       )}
     </>
@@ -588,7 +627,7 @@ function fmtFullTC(sec) {
 }
 
 /* Audio mixer channel */
-function MixerChannel({ id, label, level, color }) {
+function MixerChannel({ label, level, color }) {
   const [vol, setVol] = useState(level)
   const db = ((vol / 100) * 12 - 12).toFixed(1)
   const meterH = `${vol}%`
