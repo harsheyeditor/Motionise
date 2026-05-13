@@ -186,6 +186,17 @@ export default function Topbar() {
         </div>
       </div>
     </header>
+      {showProjects && (
+        <ProjectsModal
+          currentProjectId={projectId}
+          onLoad={(p) => {
+            loadProjectData(p.id)
+            setShowProjects(false)
+          }}
+          onClose={() => setShowProjects(false)}
+        />
+      )}
+    </>
   )
 }
 
