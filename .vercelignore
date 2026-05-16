@@ -1,0 +1,10 @@
+.git
+.motionise-pgdata
+.motionise-runtime
+backend/node_modules
+backend/.env
+backend/uploads/assets/*
+backend/uploads/exports/*
+node_modules
+dist
+*.log

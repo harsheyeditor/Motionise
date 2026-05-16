@@ -8,6 +8,8 @@ const fs       = require('fs')
 const projectsRouter = require('./routes/projects')
 const assetsRouter   = require('./routes/assets')
 const jobsRouter     = require('./routes/jobs')
+const authRouter     = require('./routes/auth')
+const { requireAuth } = require('./middleware/auth')
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -31,9 +33,10 @@ app.use(express.json({ limit: '10mb' }))
 app.use('/uploads', express.static(uploadsBase))
 
 // ── API Routes ─────────────────────────────────────────────
-app.use('/api/projects', projectsRouter)
-app.use('/api/assets',   assetsRouter)
-app.use('/api/jobs',     jobsRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/projects', requireAuth, projectsRouter)
+app.use('/api/assets',   requireAuth, assetsRouter)
+app.use('/api/jobs',     requireAuth, jobsRouter)
 
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

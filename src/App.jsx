@@ -10,6 +10,7 @@ import ColorPanel from './components/ColorPanel/ColorPanel'
 import AIStudio   from './components/AIStudio/AIStudio'
 import ExportModal from './components/ExportModal/ExportModal'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal/KeyboardShortcutsModal'
+import AuthModal from './components/AuthModal/AuthModal'
 import { AppProvider, useApp } from './context/AppContext'
 
 /* ── Drag-to-resize divider ── */
@@ -137,6 +138,18 @@ function Shell() {
 }
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('motionise_token'))
+
+  useEffect(() => {
+    const handleAuthChange = () => setIsAuthenticated(!!localStorage.getItem('motionise_token'))
+    window.addEventListener('auth_changed', handleAuthChange)
+    return () => window.removeEventListener('auth_changed', handleAuthChange)
+  }, [])
+
+  if (!isAuthenticated) {
+    return <AuthModal onLogin={() => setIsAuthenticated(true)} />
+  }
+
   return (
     <AppProvider>
       <Shell />

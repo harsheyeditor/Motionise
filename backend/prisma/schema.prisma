@@ -10,6 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Users ─────────────────────────────────────────────────
+model User {
+  id        String    @id @default(cuid())
+  username  String    @unique
+  password  String
+  projects  Project[]
+  assets    Asset[]
+  jobs      Job[]
+  createdAt DateTime  @default(now())
+}
+
 // ── Projects ──────────────────────────────────────────────
 model Project {
   id        String   @id @default(cuid())
@@ -20,6 +31,8 @@ model Project {
   zoom      Float    @default(60)
   totalDur  Float    @default(18)
   thumbnail String?  // future: base64 or URL
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -34,6 +47,8 @@ model Asset {
   sizeMb    Float
   durSec    Float    @default(0)
   mimeType  String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }
 
@@ -47,6 +62,8 @@ model Job {
   result    Json?                         // { url, assetId, ... }
   error     String?
   projectId String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

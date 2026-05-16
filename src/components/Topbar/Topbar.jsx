@@ -36,7 +36,7 @@ export default function Topbar() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return
       
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
       const isCmd = isMac ? e.metaKey : e.ctrlKey
@@ -180,9 +180,18 @@ export default function Topbar() {
           Export
         </button>
 
-        {/* Avatar */}
-        <div className="tb-avatar" data-tip="Account">
-          <span>U</span>
+        {/* Avatar / Logout */}
+        <div 
+          className="tb-avatar" 
+          data-tip="Logout"
+          onClick={() => {
+            localStorage.removeItem('motionise_token')
+            localStorage.removeItem('motionise_user')
+            window.dispatchEvent(new Event('auth_changed'))
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          <span>{localStorage.getItem('motionise_user') ? JSON.parse(localStorage.getItem('motionise_user')).username[0].toUpperCase() : 'U'}</span>
         </div>
       </div>
     </header>

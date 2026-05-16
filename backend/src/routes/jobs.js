@@ -24,7 +24,7 @@ router.post('/export', async (req, res, next) => {
   try {
     const payload = ExportSchema.parse(req.body)
     const job = await prisma.job.create({
-      data: { type: 'export', payload, projectId: payload.projectId },
+      data: { type: 'export', payload, projectId: payload.projectId, userId: req.user.id },
     })
     // Kick off simulation in the background (non-blocking)
     simulateExport(job.id, payload.filename).catch(console.error)
@@ -37,7 +37,7 @@ router.post('/generate', async (req, res, next) => {
   try {
     const payload = GenerateSchema.parse(req.body)
     const job = await prisma.job.create({
-      data: { type: 'generate', payload, projectId: payload.projectId },
+      data: { type: 'generate', payload, projectId: payload.projectId, userId: req.user.id },
     })
     simulateGenerate(job.id, payload.prompt).catch(console.error)
     res.status(201).json(job)
@@ -47,7 +47,7 @@ router.post('/generate', async (req, res, next) => {
 // GET /api/jobs/:id — poll status
 router.get('/:id', async (req, res, next) => {
   try {
-    const job = await prisma.job.findUnique({ where: { id: req.params.id } })
+    const job = await prisma.job.findUnique({ where: { id: req.params.id, userId: req.user.id } })
     if (!job) return res.status(404).json({ error: 'Job not found' })
     res.json(job)
   } catch (err) { next(err) }

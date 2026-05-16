@@ -3,6 +3,10 @@ const multer     = require('multer')
 const path       = require('path')
 const fs         = require('fs')
 const { prisma } = require('../db')
+const ffmpeg     = require('fluent-ffmpeg')
+const ffprobe    = require('ffprobe-static')
+
+ffmpeg.setFfprobePath(ffprobe.path)
 
 const router = Router()
 
@@ -55,9 +59,12 @@ function formatDur(durSec) {
 // ── Routes ─────────────────────────────────────────────────
 
 // GET /api/assets — list all assets
-router.get('/', async (_req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    const assets = await prisma.asset.findMany({ orderBy: { createdAt: 'desc' } })
+    const assets = await prisma.asset.findMany({ 
+      where: { userId: req.user.id },
+      orderBy: { createdAt: 'desc' } 
+    })
     // Shape to match what the frontend AssetRow expects
     const shaped = assets.map(a => ({
       ...a,
@@ -78,6 +85,21 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     const sizeMb  = +(file.size / (1024 * 1024)).toFixed(2)
     const url     = `/uploads/assets/${file.filename}`
 
+    let durSec = 0
+    if (type === 'video' || type === 'audio') {
+      const diskPath = path.resolve(__dirname, '../../uploads/assets', file.filename)
+      durSec = await new Promise((resolve) => {
+        ffmpeg.ffprobe(diskPath, (err, metadata) => {
+          if (err || !metadata || !metadata.format) {
+            console.error('ffprobe error:', err?.message || 'No metadata')
+            resolve(0)
+          } else {
+            resolve(parseFloat(metadata.format.duration) || 0)
+          }
+        })
+      })
+    }
+
     const asset = await prisma.asset.create({
       data: {
         name:     file.originalname,
@@ -85,8 +107,9 @@ router.post('/', upload.single('file'), async (req, res, next) => {
         filename: file.filename,
         url,
         sizeMb,
-        durSec:   0,      // ffprobe integration = Phase 4.5
+        durSec,
         mimeType: file.mimetype,
+        userId:   req.user.id,
       },
     })
 
@@ -101,7 +124,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
 // DELETE /api/assets/:id — delete asset + file from disk
 router.delete('/:id', async (req, res, next) => {
   try {
-    const asset = await prisma.asset.findUnique({ where: { id: req.params.id } })
+    const asset = await prisma.asset.findUnique({ where: { id: req.params.id, userId: req.user.id } })
     if (!asset) return res.status(404).json({ error: 'Asset not found' })
 
     const diskPath = path.resolve(__dirname, '../../uploads/assets', asset.filename)

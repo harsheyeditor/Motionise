@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1",
+    "setup:local": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/setup-local.ps1",
+    "stop:local": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/stop-local.ps1",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

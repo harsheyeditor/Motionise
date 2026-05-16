@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './AIStudio.css'
 import { useApp } from '../../context/AppContext'
 
@@ -27,21 +27,93 @@ export default function AIStudio() {
   const [mood, setMood]           = useState('Cinematic')
   const [styleNotes, setStyleNotes] = useState('')
 
+  // Tracks whether this component triggered generation — used to advance stage on completion
+  const wasGeneratingRef = useRef(false)
+
+  useEffect(() => {
+    if (generating) {
+      wasGeneratingRef.current = true
+    } else if (wasGeneratingRef.current) {
+      // generation just finished
+      wasGeneratingRef.current = false
+      setStage(2)
+    }
+  }, [generating])
+
   const selTmpl = TEMPLATES.find(t => t.id === template)
 
   const buildPrompt = () => {
-    const parts = [
-      selTmpl?.label,
-      ...Object.entries(fields).map(([k,v]) => `${k}: ${v}`),
-      `Mood: ${mood}`,
-    ].filter(Boolean)
-    setMasterPrompt(parts.join('. '))
-    setStage(1)
+    if (!selTmpl) return;
+
+    let prompt = `Generate a high-quality, professional ${selTmpl.label.toLowerCase()} sequence. `;
+    const f = fields || {};
+    
+    if (selTmpl.id === 'product') {
+      prompt += `The primary subject is a product named "${f['Product name'] || '[Product]'}". `;
+      prompt += `Focus heavily on highlighting its key benefit: "${f['Key benefit'] || '[Benefit]'}". `;
+      if (f['Duration']) prompt += `Target duration is approximately ${f['Duration']}. `;
+      prompt += `Use sleek, close-up product shots with smooth, cinematic camera movements. `;
+    } 
+    else if (selTmpl.id === 'data') {
+      prompt += `Visualize data sourced from "${f['Data source'] || '[Source]'}". `;
+      prompt += `The core metric to highlight is "${f['Key metric'] || '[Metric]'}". `;
+      prompt += `Use a "${f['Chart style'] || '[Style]'}" chart style. `;
+      if (f['Duration']) prompt += `Keep the sequence to around ${f['Duration']}. `;
+      prompt += `Ensure the data visualization is clean, modern, and easy to read. `;
+    }
+    else if (selTmpl.id === 'brand') {
+      prompt += `This is a brand identity reel for "${f['Brand name'] || '[Brand]'}". `;
+      prompt += `The brand operates in the "${f['Industry'] || '[Industry]'}" industry. `;
+      prompt += `Strictly adhere to the brand colors: "${f['Colors'] || '[Colors]'}". `;
+      if (f['Duration']) prompt += `The target duration is ${f['Duration']}. `;
+      prompt += `Maintain a cohesive, engaging narrative that reflects the brand's core values. `;
+    }
+    else if (selTmpl.id === 'social') {
+      prompt += `This is a short-form video designed for "${f['Platform'] || '[Platform]'}". `;
+      prompt += `Open immediately with a strong visual hook: "${f['Hook'] || '[Hook]'}". `;
+      prompt += `End with a clear Call-To-Action (CTA): "${f['CTA'] || '[CTA]'}". `;
+      if (f['Duration']) prompt += `Pacing should be fast, fitting within ${f['Duration']}. `;
+      prompt += `Use trendy transitions and dynamic text overlays to maximize audience retention. `;
+    }
+    else if (selTmpl.id === 'event') {
+      prompt += `Create an energetic highlight reel for the event "${f['Event name'] || '[Event]'}". `;
+      prompt += `Key moments to feature include: "${f['Key moments'] || '[Moments]'}". `;
+      prompt += `Sync the edits to a "${f['Music mood'] || '[Mood]'}" musical track. `;
+      if (f['Duration']) prompt += `The recap should be roughly ${f['Duration']}. `;
+      prompt += `Use dynamic cuts and immersive b-roll to capture the event's atmosphere. `;
+    }
+    else if (selTmpl.id === 'tutorial') {
+      prompt += `This is an educational tutorial about "${f['Topic'] || '[Topic]'}". `;
+      prompt += `The target audience skill level is "${f['Skill level'] || '[Level]'}". `;
+      prompt += `Clearly demonstrate these key steps: "${f['Key steps'] || '[Steps]'}". `;
+      if (f['Duration']) prompt += `The total length should be ${f['Duration']}. `;
+      prompt += `Keep the visuals instructive, focusing on clear close-ups and helpful on-screen graphics. `;
+    }
+
+    if (mood) {
+      prompt += `\n\nOverall Mood & Tone: ${mood}. `;
+      switch(mood) {
+        case 'Cinematic': prompt += 'Use dramatic lighting, shallow depth of field, and a 24fps filmic look.'; break;
+        case 'Bold': prompt += 'Use high contrast, vibrant colors, and aggressive, fast-paced editing.'; break;
+        case 'Minimal': prompt += 'Keep compositions clean with lots of negative space. Use subtle, slow camera drifts.'; break;
+        case 'Dramatic': prompt += 'Implement moody, low-key lighting and intense, purposeful camera movements.'; break;
+        case 'Upbeat': prompt += 'Use bright, saturated colors with energetic, bounce-driven transitions.'; break;
+      }
+    }
+
+    if (styleNotes && styleNotes.trim()) {
+      prompt += `\n\nAdditional Style Directives:\n${styleNotes.trim()}`;
+    }
+
+    prompt += `\n\nTechnical Requirements: Render in 4K resolution, ensuring photorealistic textures, physically accurate lighting, and flawless motion tracking.`;
+
+    setMasterPrompt(prompt);
+    setStage(1);
   }
 
   const handleGenerate = () => {
     simulateGenerate(masterPrompt)
-    setTimeout(() => setStage(2), 5000)
+    // Stage advances reactively via the useEffect above when generating → false
   }
 
   return (

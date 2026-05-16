@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
-import { listProjects, getProject, saveProject } from '../api/projects'
+import { listProjects, getProject, saveProject, createProject } from '../api/projects'
 import { listAssets } from '../api/assets'
+import { startGenerate, waitForJob } from '../api/jobs'
 
 const Ctx = createContext(null)
 
@@ -34,6 +35,12 @@ const ASSETS = [
   { id: 'a6', name: 'logo_white.png',       type: 'image', dur: '—',    size: '0.2 MB',durSec: 5   },
 ]
 
+const DEMO_MARKERS = [
+  { id: 'm1', time: 3.2,  label: 'CUT A',   color: '#F5A623' },
+  { id: 'm2', time: 9.5,  label: 'SECTION', color: '#2DC770' },
+  { id: 'm3', time: 13,   label: 'END',     color: '#E8433A' },
+]
+
 /* Clip colour label palette */
 export const LABEL_COLORS = [
   '#EF4444', '#F97316', '#EAB308', '#22C55E',
@@ -60,6 +67,7 @@ export function AppProvider({ children }) {
   const [generating, setGenerating]         = useState(false)
   const [genProgress, setGenProgress]       = useState(0)
   const [markers, setMarkers]               = useState(DEMO_MARKERS)
+  const [backendAvailable, setBackendAvailable] = useState(true)
   const [showExportModal, setShowExportModal]               = useState(false)
   const [showShortcutsModal, setShowShortcutsModal]         = useState(false)
 
@@ -67,6 +75,13 @@ export function AppProvider({ children }) {
   const [shuttleIdx, setShuttleIdx] = useState(SHUTTLE_NEUTRAL)
 
   const [totalDuration, setTotalDuration] = useState(18)
+
+  /* ── Derive totalDuration from clips whenever clips change ── */
+  useEffect(() => {
+    if (clips.length === 0) return
+    const derived = Math.max(18, ...clips.map(c => c.start + c.dur))
+    setTotalDuration(derived)
+  }, [clips])
 
   /* ── Undo / Redo — 20-step ring buffer on clips ── */
   const historyRef = useRef([CLIPS_INITIAL])
@@ -118,12 +133,17 @@ export function AppProvider({ children }) {
   // Initial load
   useEffect(() => {
     // Load assets
-    listAssets().then(setAssets).catch(console.error)
+    listAssets().then(setAssets).catch(() => setBackendAvailable(false))
     
     // Load first project
     listProjects().then(ps => {
       if (ps.length > 0) loadProjectData(ps[0].id)
-    }).catch(console.error)
+      else setProjectId('local-demo')
+    }).catch(() => {
+      setBackendAvailable(false)
+      setProjectId('local-demo')
+      setSaveStatus('local')
+    })
   }, [loadProjectData])
 
   // Auto-save
@@ -133,7 +153,7 @@ export function AppProvider({ children }) {
       isInitialMount.current = false
       return
     }
-    if (!projectId) return
+    if (!projectId || projectId === 'local-demo' || !backendAvailable) return
 
     setSaveStatus('saving')
     const timer = setTimeout(() => {
@@ -142,7 +162,10 @@ export function AppProvider({ children }) {
         tracks, clips, markers, zoom, totalDur: totalDuration
       })
       .then(() => setSaveStatus('saved'))
-      .catch(() => setSaveStatus('unsaved'))
+      .catch(() => {
+        setBackendAvailable(false)
+        setSaveStatus('local')
+      })
     }, 1500)
 
     return () => clearTimeout(timer)
@@ -202,7 +225,7 @@ export function AppProvider({ children }) {
       const leftDur  = ph - clip.start
       const rightClip = {
         ...clip,
-        id: `${clip.id}_r${Date.now()}`,
+        id: crypto.randomUUID(),
         start: ph,
         dur: clip.dur - leftDur,
       }
@@ -214,16 +237,16 @@ export function AppProvider({ children }) {
 
   /* ── Drop asset onto track ── */
   const dropAssetToTrack = useCallback((assetId, trackId, startSec) => {
-    const asset = ASSETS.find(a => a.id === assetId)
+    const asset = assets.find(a => a.id === assetId)
     if (!asset) return
     const newClip = {
-      id: `drop_${assetId}_${Date.now()}`,
+      id: crypto.randomUUID(),
       track: trackId,
       name: asset.name,
       start: Math.max(0, startSec),
-      dur: asset.durSec,
+      dur: asset.durSec || 5,
       color: trackId.startsWith('a') ? '#059669'
-           : trackId === 'fx' ? '#D97706'
+           : trackId === 'fx'        ? '#D97706'
            : '#2563EB',
       aiGenerated: false,
     }
@@ -232,7 +255,7 @@ export function AppProvider({ children }) {
       pushHistory(next)
       return next
     })
-  }, [pushHistory])
+  }, [assets, pushHistory])
 
   /* ── Clip colour label ── */
   const setClipColor = useCallback((clipId, color) => {
@@ -268,9 +291,15 @@ export function AppProvider({ children }) {
 
   const toggleTrackProp = useCallback((trackId, prop) => {
     setTracks(ts => ts.map(t => t.id === trackId ? { ...t, [prop]: !t[prop] } : t))
-  }, [])
+    // Snapshot current clips into history so undo restores context around this track change
+    setClips(current => {
+      pushHistory(current)
+      return current
+    })
+  }, [pushHistory])
 
-  const simulateGenerate = useCallback((prompt) => {
+  /* Fake generate loop — used when backend is unreachable */
+  const _fakeGenerate = useCallback((prompt) => {
     setGenerating(true)
     setGenProgress(0)
     let p = 0
@@ -284,10 +313,10 @@ export function AppProvider({ children }) {
           setGenProgress(0)
           setClips(cs => {
             const next = [...cs, {
-              id: `c_ai_${Date.now()}`,
+              id: crypto.randomUUID(),
               track: 'v1',
               name: `AI: ${prompt.slice(0, 28)}`,
-              start: 18,
+              start: Math.max(0, ...cs.map(c => c.start + c.dur)),
               dur: 4,
               color: '#2D1A6B',
               aiGenerated: true,
@@ -299,11 +328,60 @@ export function AppProvider({ children }) {
       }
       setGenProgress(p)
     }, 250)
-  }, [pushHistory])
+  }, [pushHistory, totalDuration])
+
+  /* Real generate — calls backend job API, auto-creates project if needed */
+  const simulateGenerate = useCallback(async (prompt) => {
+    if (!prompt.trim()) return
+
+    // If backend is down, use fake loop immediately
+    if (!backendAvailable) {
+      _fakeGenerate(prompt)
+      return
+    }
+
+    setGenerating(true)
+    setGenProgress(0)
+    try {
+      // Auto-create a project if none exists yet
+      let pid = projectId
+      if (!pid || pid === 'local-demo') {
+        const created = await createProject(projectName || 'Untitled Project')
+        setProjectId(created.id)
+        pid = created.id
+      }
+
+      const job = await startGenerate(pid, prompt)
+      const result = await waitForJob(job.id, (p) => setGenProgress(p ?? 0))
+      // result.result = { assetId, name, durSec }
+      const r = result.result || {}
+      setClips(cs => {
+        const next = [...cs, {
+          id: crypto.randomUUID(),
+          track: 'v1',
+          name: r.name || `AI: ${prompt.slice(0, 28)}`,
+          start: Math.max(0, ...cs.map(c => c.start + c.dur)),
+          dur: r.durSec || 4,
+          color: '#2D1A6B',
+          aiGenerated: true,
+          assetId: r.assetId || null,
+        }]
+        pushHistory(next)
+        return next
+      })
+    } catch (err) {
+      console.warn('[simulateGenerate] backend error, falling back to fake loop:', err.message)
+      _fakeGenerate(prompt)
+    } finally {
+      setGenerating(false)
+      setGenProgress(0)
+    }
+  }, [projectId, projectName, backendAvailable, pushHistory, _fakeGenerate])
+
 
   return (
     <Ctx.Provider value={{
-      projectId, loadProjectData,
+      projectId, loadProjectData, backendAvailable,
       workspace, setWorkspace,
       activeTool, setActiveTool,
       tracks, toggleTrackProp,
