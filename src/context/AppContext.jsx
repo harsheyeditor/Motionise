@@ -328,13 +328,13 @@ export function AppProvider({ children }) {
       }
       setGenProgress(p)
     }, 250)
-  }, [pushHistory, totalDuration])
+  }, [pushHistory])
 
   /* Real generate — calls backend job API, auto-creates project if needed */
   const simulateGenerate = useCallback(async (prompt) => {
     if (!prompt.trim()) return
 
-    // If backend is down, use fake loop immediately
+    // If backend is down, use fake loop immediately (it manages its own state)
     if (!backendAvailable) {
       _fakeGenerate(prompt)
       return
@@ -342,6 +342,7 @@ export function AppProvider({ children }) {
 
     setGenerating(true)
     setGenProgress(0)
+    let usedFallback = false
     try {
       // Auto-create a project if none exists yet
       let pid = projectId
@@ -371,10 +372,15 @@ export function AppProvider({ children }) {
       })
     } catch (err) {
       console.warn('[simulateGenerate] backend error, falling back to fake loop:', err.message)
+      usedFallback = true
       _fakeGenerate(prompt)
     } finally {
-      setGenerating(false)
-      setGenProgress(0)
+      // Only reset UI state when we ran the real backend path.
+      // If we fell back to _fakeGenerate it owns generating/genProgress itself.
+      if (!usedFallback) {
+        setGenerating(false)
+        setGenProgress(0)
+      }
     }
   }, [projectId, projectName, backendAvailable, pushHistory, _fakeGenerate])
 
